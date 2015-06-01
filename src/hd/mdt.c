@@ -60,6 +60,8 @@ typedef struct vm_s {
 
   int exec_count;
 
+  x86emu_memio_handler_t old_memio;
+
   hd_data_t *hd_data;
 } vm_t;
 
@@ -89,6 +91,27 @@ void list_modes(vm_t *vm, vbe_info_t *vbe);
 
 void print_edid(int port, unsigned char *edid);
 int chk_edid_info(unsigned char *edid);
+
+
+// block all io access
+unsigned new_memio(x86emu_t *emu, u32 addr, u32 *val, unsigned type)
+{
+  vm_t *vm = emu->private;
+  unsigned err = 0;
+
+  if((type & ~0xff) == X86EMU_MEMIO_I) {
+    // 0 instead of 0xffffffff seems to work better
+    // else we might get issues waiting for monitor sync
+    *val = 0;
+  }
+  else if((type & ~0xff) == X86EMU_MEMIO_O) {
+  }
+  else {
+    err = vm->old_memio(emu, addr, val, type);
+  }
+
+  return err;
+}
 
 
 void get_vbe_info(hd_data_t *hd_data, vbe_info_t *vbe)
@@ -404,6 +427,9 @@ int vm_prepare(vm_t *vm)
 
   // stack & buffer space
   x86emu_set_perm(vm->emu, VBE_BUF, 0xffff, X86EMU_PERM_RW);
+
+  // replace memio handler
+  vm->old_memio = x86emu_set_memio_handler(vm->emu, new_memio);
 
   if(vm->timeout) vm->emu->timeout = vm->timeout ?: 20;
 
