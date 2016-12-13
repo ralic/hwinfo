@@ -58,6 +58,10 @@
 #define WITH_ISDN	1
 #endif
 
+// maximum attribute size in sysfs we expect
+// (this is to avoid accidentally reading unlimited data)
+#define MAX_ATTR_SIZE		0x10000
+
 #define PROGRESS(a, b, c) progress(hd_data, a, b, c)
 #define ADD2LOG(a...) str_printf(&hd_data->log, -2, a)
 
@@ -224,6 +228,7 @@ str_list_t *hd_module_list(hd_data_t *hd_data, unsigned id);
 
 char* get_sysfs_attr(const char* bus, const char* device, const char* attr);
 char* get_sysfs_attr_by_path(const char* path, const char* attr);
+char *get_sysfs_attr_by_path2(const char *path, const char *attr, unsigned *len);
 
 hal_device_t *hd_free_hal_devices(hal_device_t *dev);
 void hd_pci_complete_data(hd_t *hd);
