@@ -3,12 +3,23 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <byteswap.h>
+// #include <byteswap.h>
+#include <libkern/OSByteOrder.h>
+#define bswap_16 OSSwapInt16
+#define bswap_32 OSSwapInt32
+#define bswap_64 OSSwapInt64
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(__i386__) || defined (__x86_64__) || defined(__ia64__)
+// #if defined(__i386__) || defined (__x86_64__) || defined(__ia64__)
+// #include <sys/io.h>
+// #endif
+
+#ifdef __APPLE__
+#include <sys/uio.h>
+#else
 #include <sys/io.h>
 #endif
+
 #include <linux/pci.h>
 
 #include "hd.h"
